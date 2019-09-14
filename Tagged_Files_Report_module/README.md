@@ -7,4 +7,4 @@ Tagged files can be sorted by date, path, name and etc.
 - __Module Location__: Here
 - __Website:__ 
 - __Source Code:__ Here 
-- __License:__  
+- __License:__  GNU General Public License Version 3
