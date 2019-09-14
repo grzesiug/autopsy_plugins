@@ -372,12 +372,6 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         except:
             self.log(Level.INFO, "Could Not copy resources directory")
 
-        # Copy the base files needed for the report
-        try:
-            copy_base_dir = os.path.join(head, "base_folder")
-            copy_tree(copy_base_dir, report_dir)
-        except:
-            self.log(Level.INFO, "Could not write files from base_folder to base_report_Folder")
          
         # Create the index page        
         self.create_index_file(baseReportDir)
