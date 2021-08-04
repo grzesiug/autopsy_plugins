@@ -3,7 +3,7 @@ Report can be easly translated to your language by creating language new file in
 Now english and polish language is supported. Language file should be name in following format lang_yourlanguagename_.txt.
 Tagged files can be sorted by date, path, name and etc.
 - __Author:__ Grzegorz Ginalski (grzegorz dot ginalski at o2 dot pl)
-- __Minimum Autopsy version:__ 4.1.0
+- __Minimum Autopsy version:__ 4.16.0
 - __Module Location__: Here
 - __Website:__ 
 - __Source Code:__ Here 
