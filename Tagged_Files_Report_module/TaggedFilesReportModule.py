@@ -346,7 +346,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         copy_resources_dir = os.path.join(head, "res")
 
         try:
-            report_dir = os.path.join(baseReportDir, self.lang.translate("Report"))
+            report_dir = os.path.join(baseReportDir.getReportDirectoryPath(), self.lang.translate("Report"))
             os.mkdir(report_dir)
         except:
             self.log(Level.INFO, "Could not create base report dir")
@@ -374,7 +374,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
 
          
         # Create the index page        
-        self.create_index_file(baseReportDir)
+        self.create_index_file(baseReportDir.getReportDirectoryPath())
          
         # Create The information page
         try:
@@ -409,7 +409,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         # Increment since we are done with step #1
         progressBar.increment()
 
-        fileName = os.path.join(baseReportDir, self.report_file_name)
+        fileName = os.path.join(baseReportDir.getReportDirectoryPath(), self.report_file_name)
 
         # Add the report to the Case, so it is shown in the tree
         try:		
@@ -539,7 +539,18 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
 			
             htmlVideoMime=['video/mp4','video/webm','video/quicktime','video/ogg','video/x-m4v']
             htmlAudioMime=['audio/mp4','audio/mpeg','audio/vnd.wave','audio/vorbis','audio/x-flac']			
-			
+            extDict={
+            'video/mp4':'.mp4',
+            'video/webm':'.webm',
+            'video/quicktime':'.mov',
+            'video/ogg':'.ogg',
+            'video/x-m4v':'.m4v',
+            'audio/vnd.wave':'.wave',
+            'audio/vorbis':'.ogg',
+            'audio/x-flac':'.flac',
+            'image/vnd.microsoft.icon':'.ico',
+            'image/x-portable-floatmap':'.pbm'			
+            }
 			#zmienna przechowuje typ elementu HTML podstawianego do pliku bookmatk.html
             tagType='img'
             style = 'style="max-width: 100%; max-height: 62vh; min-height: 30vh; "'
@@ -598,9 +609,12 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             else:				
                 if self.get_extension(file_name)==None:
                     mime_ext=MimeType.split('/')[1]				
-                    if 	len(mime_ext) < 5:			
-                        new_extension='.'+ mime_ext
-				
+                    if 	(len(mime_ext) < 5 ):
+                        new_extension="." + mime_ext
+                    else:						
+                        new_extension=extDict[MimeType]
+
+						   
             exported_file_mame= self.standardize_folder_name(str(obj_id) + "-" + tag_content.getName()+new_extension)
             extractPath = os.path.join(report_files_dir,tag_folder_name,exported_file_mame)            
             #save selected file in report folder
