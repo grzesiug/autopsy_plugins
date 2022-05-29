@@ -74,69 +74,13 @@ from javax.swing import JComboBox
 from javax.swing.filechooser import FileNameExtensionFilter
 import time
 import re
-import inspect
-import glob
+#from Language import Language
 
-class Language():
-   
-    def __init__(self):
-        self._logger = Logger.getLogger("Language")	
-        module_dir,tail = os.path.split(os.path.abspath(__file__))
-        self.language_dir=os.path.join(module_dir,"language")
-		
 
-        self.dict={'LANGUAGE':'LANGUAGE'}
-
-				
-    def translate(self, keyword):	
-        if keyword in self.dict:
-            return self.dict.get(keyword)
-        else:
-            return keyword
-
-    def log(self, level, msg):
-        self._logger.logp(level, self.__class__.__name__, inspect.stack()[1][3], msg)	
-
-    def setLanguageTo(self, language_name):
-	
-        self.dict.clear()	
-        if language_name=="english_default":
-            return		
-        language_file = "lang_" + language_name + "_.txt"	
-        lang_file_path=os.path.join(self.language_dir,language_file)
-        try:		
-            lang_file = codecs.open(lang_file_path,'r',"UTF-8")
-            lines = list(lang_file)
-            for line in lines:
-                try:
-		            #split wg ';' i pobranie textu pomiędzy znakami "" 
-                    key = re.findall('".*"', line.split(';')[0])[0]
-                    value = re.findall('".*"', line.split(';')[1])[0]
-		    	    #usunięcie znaków "
-                    key = key.replace('"','')
-                    value =  value.replace('"','')
-		    	    #dodanie wartości di dictionary
-                    self.dict[key]=value
-                except BaseException as e:
-                    self.log(Level.INFO,str(e))				
-            lang_file.close()
-        except BaseException as e:
-            self.log(Level.INFO,str(e))
-	
-    def getLanguages(self):
-        try:
-            lang_files = ["english_default"]
-            for file in glob.glob(os.path.join(self.language_dir,"lang_*_.txt")):
-                file_name= os.path.basename(file)
-                language = re.findall('_.*_',file_name)[0]
-                language = language.replace('_','')			
-                lang_files.append(language) 			
-            return lang_files
-        except BaseException as e:
-            self.log(Level.INFO,str(e))
 
 class TagHtmlReportModule(GeneralReportModuleAdapter):
     
+
     def __init__(self):
         self.tags_selected = []
         self.moduleName = "Tagged Files Report" 
@@ -221,8 +165,8 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
 
 
 
-        items = self.lang.getLanguages()	
-        self.Language_Combobox = JComboBox(items) 
+        langList = self.lang.getLanguages()	
+        self.Language_Combobox = JComboBox(langList) 
         self.Language_Combobox.setEnabled(True)	
         self.Language_Combobox.itemStateChanged = self.eventListener		
         self.gbcPanel0.gridx = 3 
@@ -328,10 +272,67 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         #self.gbPanel0.setConstraints( self.Blank_4, self.gbcPanel0 ) 
         #self.panel0.add( self.Blank_4 ) 
 
+
+        self.Blank_5 = JLabel( "Sort files by:") 
+        self.Blank_5.setEnabled(True)
+        self.gbcPanel0.gridx = 1 
+        self.gbcPanel0.gridy = 21
+        self.gbcPanel0.gridwidth = 1 
+        self.gbcPanel0.gridheight = 1 
+        self.gbcPanel0.fill = GridBagConstraints.BOTH 
+        self.gbcPanel0.weightx = 1 
+        self.gbcPanel0.weighty = 0 
+        self.gbcPanel0.anchor = GridBagConstraints.NORTH 
+        self.gbPanel0.setConstraints( self.Blank_5, self.gbcPanel0 ) 
+        self.panel0.add( self.Blank_5 ) 
+		
+        sortItems = [ 'Date Modified' ,'Date Created','Date Accessed', 'File Path', 'File Name','File Size', 'MD5 Hash', 'MIME Type' ]	
+        self.SortBy_Combobox = JComboBox(sortItems) 
+        self.SortBy_Combobox.setEnabled(True)
+        self.gbcPanel0.gridx = 3 
+        self.gbcPanel0.gridy = 21 
+        self.gbcPanel0.gridwidth = 1 
+        self.gbcPanel0.gridheight = 1 
+        self.gbcPanel0.fill = GridBagConstraints.BOTH 
+        self.gbcPanel0.weightx = 1 
+        self.gbcPanel0.weighty = 0 
+        self.gbcPanel0.anchor = GridBagConstraints.NORTH 
+        self.gbPanel0.setConstraints( self.SortBy_Combobox, self.gbcPanel0 ) 
+        self.panel0.add( self.SortBy_Combobox) 
+
+        self.Label_6 = JLabel( "Select which data source(s) to include:") 
+        self.Label_6.setEnabled(True)
+        self.gbcPanel0.gridx = 3 
+        self.gbcPanel0.gridy = 22
+        self.gbcPanel0.gridwidth = 1 
+        self.gbcPanel0.gridheight = 1 
+        self.gbcPanel0.fill = GridBagConstraints.BOTH
+        self.gbcPanel0.weightx = 1 
+        self.gbcPanel0.weighty = 0 
+        self.gbcPanel0.anchor = GridBagConstraints.NORTH 
+        self.gbPanel0.setConstraints( self.Label_6, self.gbcPanel0 ) 
+        self.panel0.add( self.Label_6 ) 
+		
+        data_source_list = self.get_data_sources()
+        self.List_Box_Sources = JList( data_source_list, valueChanged=self.onchange_sb)
+        self.List_Box_Sources.setVisibleRowCount( 3 ) 
+        self.scpList_Box_Sources = JScrollPane( self.List_Box_Sources ) 
+        self.gbcPanel0.gridx = 3 
+        self.gbcPanel0.gridy = 23 
+        self.gbcPanel0.gridwidth = 1 
+        self.gbcPanel0.gridheight = 1 
+        self.gbcPanel0.fill = GridBagConstraints.BOTH 
+        self.gbcPanel0.weightx = 1 
+        self.gbcPanel0.weighty = 1 
+        self.gbcPanel0.anchor = GridBagConstraints.NORTH 
+        self.gbPanel0.setConstraints( self.scpList_Box_Sources, self.gbcPanel0 )
+        self.List_Box_Sources.setSelectionInterval(0,self.List_Box_Sources.getModel().getSize() - 1)
+        self.panel0.add( self.scpList_Box_Sources ) 
+
         self.Label_5 = JLabel( "Tags to Select for Report:") 
         self.Label_5.setEnabled(True)
         self.gbcPanel0.gridx = 1 
-        self.gbcPanel0.gridy = 21
+        self.gbcPanel0.gridy = 22
         self.gbcPanel0.gridwidth = 1 
         self.gbcPanel0.gridheight = 1 
         self.gbcPanel0.fill = GridBagConstraints.BOTH 
@@ -341,7 +342,8 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         self.gbPanel0.setConstraints( self.Label_5, self.gbcPanel0 ) 
         self.panel0.add( self.Label_5 ) 
 
-        self.List_Box_LB = JList( self.find_tags(), valueChanged=self.onchange_lb)
+        self.tag_list=self.find_tags()
+        self.List_Box_LB = JList( self.tag_list, valueChanged=self.onchange_lb)
         self.List_Box_LB.setVisibleRowCount( 3 ) 
         self.scpList_Box_LB = JScrollPane( self.List_Box_LB ) 
         self.gbcPanel0.gridx = 1 
@@ -354,45 +356,43 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         self.gbcPanel0.anchor = GridBagConstraints.NORTH 
         self.gbPanel0.setConstraints( self.scpList_Box_LB, self.gbcPanel0 ) 
         self.panel0.add( self.scpList_Box_LB ) 
-
-        self.Blank_5 = JLabel( "Sort files by:") 
-        self.Blank_5.setEnabled(True)
-        self.gbcPanel0.gridx = 3 
-        self.gbcPanel0.gridy = 21
-        self.gbcPanel0.gridwidth = 1 
-        self.gbcPanel0.gridheight = 1 
-        self.gbcPanel0.fill = GridBagConstraints.BOTH 
-        self.gbcPanel0.weightx = 1 
-        self.gbcPanel0.weighty = 0 
-        self.gbcPanel0.anchor = GridBagConstraints.NORTH 
-        self.gbPanel0.setConstraints( self.Blank_5, self.gbcPanel0 ) 
-        self.panel0.add( self.Blank_5 ) 
-		
-        items = [ 'Date Modified' ,'Date Created','Date Accessed', 'File Path', 'File Name','File Size', 'MD5 Hash', 'MIME Type' ]	
-        self.SortBy_Combobox = JComboBox(items) 
-        self.SortBy_Combobox.setEnabled(True)
-        self.gbcPanel0.gridx = 3 
-        self.gbcPanel0.gridy = 23 
-        self.gbcPanel0.gridwidth = 1 
-        self.gbcPanel0.gridheight = 1 
-        self.gbcPanel0.fill = GridBagConstraints.NORTH 
-        self.gbcPanel0.weightx = 1 
-        self.gbcPanel0.weighty = 0 
-        self.gbcPanel0.anchor = GridBagConstraints.NORTH 
-        self.gbPanel0.setConstraints( self.SortBy_Combobox, self.gbcPanel0 ) 
-        self.panel0.add( self.SortBy_Combobox) 
-
-        #self.add(self.panel0)
+        
         return self.panel0
         
     def generateReport(self, baseReportDir, progressBar):
 
+
+		
+		# Get tag from selected data sources
+        tags = Case.getCurrentCase().getServices().getTagsManager().getAllContentTags()
+        self.data_source_tags=[]
+        for tag in tags:
+            for source in self.data_source_selected:
+                if source.Id==tag.getContent().getDataSource().getId():
+                   self.data_source_tags.append(tag)
+        if len(self.data_source_tags)==0:	
+            progressBar.complete(ReportStatus.ERROR)
+            progressBar.updateStatusLabel("No tags to proceed!")			
+            return
+			
+        no_empty_tags_selected=[]
+        for sel_tag in self.tags_selected:
+            tags_to_process = []
+            for tag in self.data_source_tags:
+                if tag.getName().getDisplayName() == sel_tag:
+					       tags_to_process.append(tag)
+			#jeśli w danej grupie wystepują tagi to dodaje do listy			   
+            if len(tags_to_process)>0:
+                no_empty_tags_selected.append(sel_tag)
+                self.log(Level.INFO, "this is a content tags ==> " + str(sel_tag) + " <==")				
+        # do zaznoczonych tagów podstawiamy tylko te które maja elementy dla zaznaczonych data source	
+        self.tags_selected=no_empty_tags_selected
+		
         self.lang.setLanguageTo(self.Language_Combobox.getSelectedItem())
         self.report_file_name=self.lang.translate("Report.html")
         progressBar.setIndeterminate(False)
         progressBar.start()
 		
-
         # Set status bar for number of tags
         progressBar.setMaximumProgress(len(self.tags_selected)+2)
 
@@ -441,24 +441,26 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         self.create_menu_file(report_dir)
          
         # Get all Content
-        tags = Case.getCurrentCase().getServices().getTagsManager().getAllContentTags()
+        tags = self.data_source_tags
         tag_number = 1
-        
+        no_empty_tags_selected=[]
         for sel_tag in self.tags_selected:
             tags_to_process = []
             for tag in tags:
                 if tag.getName().getDisplayName() == sel_tag:
-                    tags_to_process.append(tag)
-                    #self.log(Level.INFO, "this is a content tags ==> " + tag.getName().getDisplayName() + " <==")
+					       tags_to_process.append(tag)	
+            #self.log(Level.INFO, "this is a content tags ==> " + str(sel_tag) + " <==")
             progressBar.updateStatusLabel("Process tag " + sel_tag)
             sorted_tag=self.sort_tags(tags_to_process,self.SortBy_Combobox.getSelectedItem())
             try:
-                        
-                self.process_thru_tags(report_dir,sorted_tag , tag_number, sel_tag, report_files_dir)
+                if len(sorted_tag)>0:        
+                   self.process_thru_tags(report_dir,sorted_tag , tag_number, sel_tag, report_files_dir)
             except BaseException as e:	
                 self.log(Level.INFO, str(e) )
             progressBar.increment()	
             tag_number = tag_number + 1
+			
+
 			
 		#Create help file	
         self.create_help_page(report_dir)        
@@ -611,7 +613,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             tagType='img'
             style = 'style="max-width: 100%; max-height: 62vh; min-height: 30vh; "'
             fileType=""
-			#przechowuje code dla plików wideo ikreślający czas podglądu np #t=0.5
+			#przechowuje code dla plików wideo określający czas podglądu np #t=0.5
             previewTime=''
 			#Plik video
             if ("video/" in MimeType):
@@ -653,13 +655,14 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
                                     gps_dataText=gps_dataText.replace('['+display_name+']',value) 	
                                 exif =exif_dataText			
 
-            #jeśli jest szerokość to dodaje wiersz z danymi gps
+            #jeśli jest szerokość geo to dodaje wiersz z danymi gps
             if '[Latitude]' not in gps_dataText:
                 exif+=gps_dataText			
 			
 			#Jeśli plik inny niż video,image,audio, text to wybieramy kod html z pliku bookmark_no_media.html
             if not("video/" in MimeType or "image/" in MimeType or "text/" in MimeType or "audio/" in MimeType):			
-                bookmark_file= "bookmark_no_media.html"
+                #bookmark_file= "bookmark.html"
+                bookmark_file= "bookmark_no_media.html"                
 				# dla plików video, audio, text , image sprawdzamy rozszerzenie,
 				# jeśli nie ma to dodajemy do nazwy esportowanego pliku
             else:				
@@ -854,8 +857,18 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             infoText = infoText.replace('[lb_description]', self.lang.translate("Description"))
             infoText = infoText.replace('[lb_attention]', self.lang.translate("ATTENTION"))	
             infoText = infoText.replace('[attention_info]', self.lang.translate("To view this report preferred browser is latest Google Chrome, Microsoft Edge or Firefox"))
+            
+            #dodawanie informacji o żródlach danych
+            infoText = infoText.replace('[lb_image_information]', self.lang.translate("Image information"))
 			
-            	
+            data_source_rows="<tr><th class=\"tdh\">"+self.lang.translate("Source name")+"</th><th class=\"tdh\">"+self.lang.translate("Tag name")+"</th><th class=\"tdright\" >"+self.lang.translate("Tagged files count")+"</th></tr>"
+            for source in self.data_source_selected:
+                data_source_rows+="<tr> <td class=\"tds\">"+str(source.Name)+"</td>  <td class=\"tds\"></td> <td class=\"tds\"> </td> </tr>"
+                for tag in self.tags_selected:
+                    data_source_rows+="<tr> <td></td><td class=\"tdr\">"+self.lang.translate(tag)+"</td><td class=\"tdright\">"+self.count_tags(tag,source.Id)+"</td>"
+                                       
+            infoText = infoText.replace('[source_name_row]', data_source_rows)
+			
             # Open and write information.html file
             info_file_name = os.path.join(report_dir, "Info.html")
             info_file = open(info_file_name, 'w')
@@ -864,7 +877,8 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             
             # Close Info File        
             info_file.close()
-	       
+            self.log(Level.INFO, "Info page created")
+			
         except BaseException as e:		
             self.log(Level.INFO, str(e))
 			
@@ -956,16 +970,32 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         menu_file.write('</body>')
         menu_file.write('</html>')
         menu_file.close()
+        self.log(Level.INFO, "Menu file created")
 
     def onchange_lb(self, event):
         self.tags_selected[:] = []
         self.tags_selected = self.List_Box_LB.getSelectedValuesList()
 
+    def onchange_sb(self, event):
+        self.data_source_selected=[]
+        selectedIx = self.List_Box_Sources.getSelectedIndices()	
+        for i in selectedIx:
+            self.data_source_selected.append(self.List_Box_Sources.getModel().getElementAt(i))
+		
+		
+	# return string	with data source ids ex. "12,4589,45555"	
+    def get_string_source_id_selected(self):
+        ids=[]
+        separtor=","
+        for source in self.data_source_selected:
+           ids.append(str(source.Id))
+        return 	separtor.join(ids)		
 
     def find_tags(self):
         tag_list = []
-        sql_statement = "SELECT distinct(display_name) u_tag_name FROM content_tags INNER JOIN tag_names ON " + \
-                        " content_tags.tag_name_id = tag_names.tag_name_id;"
+        sql_statement = "SELECT distinct(display_name) u_tag_name FROM content_tags INNER JOIN tag_names ON content_tags.tag_name_id = tag_names.tag_name_id  INNER JOIN tsk_files on content_tags.obj_id = tsk_files.obj_id" +\
+		                " where tsk_files.data_source_obj_id in ("+self.get_string_source_id_selected()+")"
+        #self.log(Level.INFO, sql_statement)
         skCase = Case.getCurrentCase().getSleuthkitCase()
         dbquery = skCase.executeQuery(sql_statement)
         resultSet = dbquery.getResultSet()
@@ -974,19 +1004,37 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         dbquery.close()    
         return tag_list 
         
-    #sortuje wytypowane pliki wg daty
-    def sort_tags(self, tags_to_sort,sort_criterion):
+    def count_tags(self,tag_name,data_source_id):
+        #tag_count = [];
+        sql_statement = "SELECT count(*) count FROM content_tags INNER JOIN tag_names ON content_tags.tag_name_id = tag_names.tag_name_id  INNER JOIN tsk_files on content_tags.obj_id = tsk_files.obj_id" +\
+		                " where tsk_files.data_source_obj_id in ("+str(data_source_id)+") and display_name='"+tag_name+"'"
+        #self.log(Level.INFO, sql_statement)
+        skCase = Case.getCurrentCase().getSleuthkitCase()
+        dbquery = skCase.executeQuery(sql_statement)
+        resultSet = dbquery.getResultSet() 
+        tag_count= resultSet.getString("count")       
+        dbquery.close()    
+        return tag_count         
         
+    #sortuje wytypowane pliki wg kryterium
+    def sort_tags1(self, tags_to_sort,sort_criterion):
+	
+        
+        sorted_tags=[]
+
+        tag_count=len(tags_to_sort)
+        self.log(Level.INFO, "Sorting started: tags to be processed "+str(tag_count) )		
+        if tag_count==0:
+           return sorted_tags
         i=0
         r=0
-        sorted_tags=[]
+
         min_item = self.get_item_to_sort(tags_to_sort[0],sort_criterion)
                 
         while (len(tags_to_sort)>0):
                                                    
                 item =self.get_item_to_sort(tags_to_sort[i],sort_criterion)
-                if min_item >=item :
-                  
+                if min_item >=item :                  
                   min_item=item 
                   r=i              
                 if i==len(tags_to_sort)-1:                
@@ -994,11 +1042,47 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
                     tags_to_sort.pop(r)                
                     i=0
                     r=0
+                    if 	(len(sorted_tags)%100==0):				
+				    self.log(Level.INFO, "Sorted: "+str(len(sorted_tags)) )						
                     if len(tags_to_sort)>0:
                        min_item = self.get_item_to_sort(tags_to_sort[0],sort_criterion)                     
                 else:
-                    i+=1                    
+                    i+=1
+        self.log(Level.INFO, "Sorting finished")
         return     sorted_tags
+		
+    #sortuje wytypowane pliki wg kryterium
+    def sort_tags(self, tags_to_sort,sort_criterion):
+        self.log(Level.INFO, "Sorting started")
+        self.tags_to_sort=tags_to_sort
+        self.sort_criterion=sort_criterion		
+        self.quicksort(0, len(self.tags_to_sort)-1)
+        sorted=self.tags_to_sort
+        self.log(Level.INFO, "Sorting finished")
+        return     sorted	
+
+    #quick sort
+    def quicksort(self,left, right):
+        i=1
+        i=int((left+right)/2)
+        pivot=self.tags_to_sort[i]
+        self.tags_to_sort[i]=self.tags_to_sort[right]
+        j=left
+        i=left		
+        for i in range(left,right):
+            item=self.get_item_to_sort(self.tags_to_sort[i],self.sort_criterion)
+            pivot_item=self.get_item_to_sort(pivot,self.sort_criterion)
+            if (item < pivot_item):
+               	swap=self.tags_to_sort[i]
+                self.tags_to_sort[i]=self.tags_to_sort[j]
+                self.tags_to_sort[j]=swap
+                j+=1
+        self.tags_to_sort[right]=self.tags_to_sort[j]
+        self.tags_to_sort[j]=pivot
+        if (left<j-1):   
+		    self.quicksort(left, j-1)
+        if (j+1<right):   
+		    self.quicksort(j+1, right) 			
 		
     #zwraca element wg, którego zachodzi sortowanie
     def get_item_to_sort(self, tagContent,sort_criterion ):
@@ -1070,6 +1154,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
 		     				"left join blackboard_attributes USING (ARTIFACT_ID) " +\
 		     				"left join blackboard_attribute_types on (blackboard_attributes.attribute_type_id = blackboard_attribute_types.attribute_type_id) " +\
 		     				"where blackboard_artifacts.obj_id='"+str(obj_id)+"' AND blackboard_artifacts.artifact_type_id='"+str(artifact_type_id)+"';"
+            #self.log(Level.INFO,sql_statement)							
             skCase = Case.getCurrentCase().getSleuthkitCase()
             dbquery = skCase.executeQuery(sql_statement)
             resultSet = dbquery.getResultSet()			
@@ -1079,7 +1164,16 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         except BaseException as e:		
             self.log(Level.INFO,'Błąd'+ str(e))
 		
-        return result_array 	
+        return result_array
+        
+        #pobiera listę data source 
+    def get_data_sources(self):
+        source_list = []
+        skCase = Case.getCurrentCase().getSleuthkitCase()
+        resultSet = skCase.getDataSources()
+        for  source in resultSet:
+             source_list.append(Data_Source(source.getId(),source.getName()))   
+        return source_list		
 
     def eventListener(self,event):
         item = event.item 
@@ -1092,3 +1186,82 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         self.Label_4.setText(self.lang.translate("Description To Appear on Case Info"))
         self.Label_5.setText(self.lang.translate( "Tags to Select for Report:")) 
         self.Blank_5.setText(self.lang.translate( "Sort files by:")) 		
+
+class Data_Source():
+    
+    def __init__(self, Id, Name):   	 
+        self.Id = Id
+        self.Name = Name
+    def __str__(self):
+	    return self.Name		
+    def __repr__(self):    	
+        return self.Name
+
+		
+from java.io import File
+import os
+import re
+import codecs
+from org.sleuthkit.autopsy.coreutils import Logger
+from java.util.logging import Level
+import inspect
+import glob
+
+
+class Language():
+   
+    def __init__(self):
+        self._logger = Logger.getLogger("Language")	
+        module_dir,tail = os.path.split(os.path.abspath(__file__))
+        self.language_dir=os.path.join(module_dir,"language")
+		
+
+        self.dict={'LANGUAGE':'LANGUAGE'}
+
+				
+    def translate(self, keyword):	
+        if keyword in self.dict:
+            return self.dict.get(keyword)
+        else:
+            return keyword
+
+    def log(self, level, msg):
+        self._logger.logp(level, self.__class__.__name__, inspect.stack()[1][3], msg)	
+
+    def setLanguageTo(self, language_name):
+	
+        self.dict.clear()	
+        if language_name=="english_default":
+            return		
+        language_file = "lang_" + language_name + "_.txt"	
+        lang_file_path=os.path.join(self.language_dir,language_file)
+        try:		
+            lang_file = codecs.open(lang_file_path,'r',"UTF-8")
+            lines = list(lang_file)
+            for line in lines:
+                try:
+		            #split wg ';' i pobranie textu pomiędzy znakami "" 
+                    key = re.findall('".*"', line.split(';')[0])[0]
+                    value = re.findall('".*"', line.split(';')[1])[0]
+		    	    #usunięcie znaków "
+                    key = key.replace('"','')
+                    value =  value.replace('"','')
+		    	    #dodanie wartości di dictionary
+                    self.dict[key]=value
+                except BaseException as e:
+                    self.log(Level.INFO,str(e))				
+            lang_file.close()
+        except BaseException as e:
+            self.log(Level.INFO,str(e))
+	
+    def getLanguages(self):
+        try:
+            lang_files = ["english_default"]
+            for file in glob.glob(os.path.join(self.language_dir,"lang_*_.txt")):
+                file_name= os.path.basename(file)
+                language = re.findall('_.*_',file_name)[0]
+                language = language.replace('_','')			
+                lang_files.append(language) 			
+            return lang_files
+        except BaseException as e:
+            self.log(Level.INFO,str(e))		
