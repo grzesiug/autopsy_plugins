@@ -74,13 +74,69 @@ from javax.swing import JComboBox
 from javax.swing.filechooser import FileNameExtensionFilter
 import time
 import re
-from Language import Language
+import inspect
+import glob
 
+class Language():
+   
+    def __init__(self):
+        self._logger = Logger.getLogger("Language")	
+        module_dir,tail = os.path.split(os.path.abspath(__file__))
+        self.language_dir=os.path.join(module_dir,"language")
+		
 
+        self.dict={'LANGUAGE':'LANGUAGE'}
+
+				
+    def translate(self, keyword):	
+        if keyword in self.dict:
+            return self.dict.get(keyword)
+        else:
+            return keyword
+
+    def log(self, level, msg):
+        self._logger.logp(level, self.__class__.__name__, inspect.stack()[1][3], msg)	
+
+    def setLanguageTo(self, language_name):
+	
+        self.dict.clear()	
+        if language_name=="english_default":
+            return		
+        language_file = "lang_" + language_name + "_.txt"	
+        lang_file_path=os.path.join(self.language_dir,language_file)
+        try:		
+            lang_file = codecs.open(lang_file_path,'r',"UTF-8")
+            lines = list(lang_file)
+            for line in lines:
+                try:
+		            #split wg ';' i pobranie textu pomiędzy znakami "" 
+                    key = re.findall('".*"', line.split(';')[0])[0]
+                    value = re.findall('".*"', line.split(';')[1])[0]
+		    	    #usunięcie znaków "
+                    key = key.replace('"','')
+                    value =  value.replace('"','')
+		    	    #dodanie wartości di dictionary
+                    self.dict[key]=value
+                except BaseException as e:
+                    self.log(Level.INFO,str(e))				
+            lang_file.close()
+        except BaseException as e:
+            self.log(Level.INFO,str(e))
+	
+    def getLanguages(self):
+        try:
+            lang_files = ["english_default"]
+            for file in glob.glob(os.path.join(self.language_dir,"lang_*_.txt")):
+                file_name= os.path.basename(file)
+                language = re.findall('_.*_',file_name)[0]
+                language = language.replace('_','')			
+                lang_files.append(language) 			
+            return lang_files
+        except BaseException as e:
+            self.log(Level.INFO,str(e))
 
 class TagHtmlReportModule(GeneralReportModuleAdapter):
     
-
     def __init__(self):
         self.tags_selected = []
         self.moduleName = "Tagged Files Report" 
