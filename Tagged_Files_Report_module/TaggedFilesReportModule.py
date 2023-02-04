@@ -44,6 +44,7 @@ sys.setdefaultencoding('utf8')
 from java.lang import System
 from java.util.logging import Level
 from org.sleuthkit.autopsy.casemodule import Case
+from org.sleuthkit.autopsy.coreutils import Version
 from org.sleuthkit.autopsy.coreutils import Logger
 from org.sleuthkit.autopsy.report import GeneralReportModuleAdapter
 from org.sleuthkit.autopsy.report.ReportProgressPanel import ReportStatus
@@ -755,7 +756,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             fileIndexEnd = (num_of_tags_per_page*current_page)
             if fileIndexEnd>number_of_tags:
                fileIndexEnd=number_of_tags
-			   
+            autopsy_version=Version.getVersion()   
             
             headerText = headerText.replace('*sorted_by*',self.lang.translate("Files sorted by *sorted_by* in ascending order."))
             headerText = headerText.replace('*sorted_by*',self.lang.translate(sorted_by))			
@@ -767,7 +768,9 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
 
             
             headerText = headerText.replace('*examiner*', self.Examiners_TF.getText())
-            headerText = headerText.replace('*report_date*', datetime.datetime.today().strftime('%Y-%m-%d %H:%M'))	
+            headerText = headerText.replace('*report_date*', datetime.datetime.today().strftime('%Y-%m-%d %H:%M'))
+            headerText = headerText.replace('*lb_autopsy_ver*', self.lang.translate("Autopsy version"))	
+            headerText = headerText.replace('*autopsy_ver*', self.lang.translate(autopsy_version))			
             headerText = headerText.replace('*description*',  self.Description_TF.getText())	
             headerText = headerText.replace('*from*', str(fileIndexStart))
             headerText = headerText.replace('*to*',  str(fileIndexEnd))
@@ -846,6 +849,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             
             infoFile = open(infoPath, 'r')           
             infoText = infoFile.read()
+            autopsy_version=Version.getVersion()
             
             infoText = infoText.replace('*case_info*', self.lang.translate("Case Information"))
             infoText = infoText.replace('*title*', self.lang.translate("Report of media analysis"))		
@@ -863,6 +867,8 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             infoText = infoText.replace('*lb_description*', self.lang.translate("Description"))
             infoText = infoText.replace('*lb_attention*', self.lang.translate("ATTENTION"))	
             infoText = infoText.replace('*attention_info*', self.lang.translate("To view this report preferred browser is latest Google Chrome, Microsoft Edge or Firefox"))
+            infoText = infoText.replace('*lb_autopsy_ver*', self.lang.translate("Autopsy version"))	
+            infoText = infoText.replace('*autopsy_ver*', self.lang.translate(autopsy_version))
             
             #dodawanie informacji o żródlach danych
             infoText = infoText.replace('*lb_image_information*', self.lang.translate("Image information"))

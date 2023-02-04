@@ -71,4 +71,5 @@
 "Storage and visualization of files"	;
 "Not all of the evidence files exported to this optical media can be opened up in the browser application. In this case, it can be needed the instalation of the proper application"	;
 "All of the evidence files were exported to report folder *report_dir*/*tagged_files*."	;
+"Autopsy version"
 

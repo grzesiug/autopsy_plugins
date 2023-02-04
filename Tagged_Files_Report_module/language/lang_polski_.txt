@@ -81,4 +81,5 @@
 "Source name";"Nazwa źródła"
 "Tag name";"Nazwa grupy"
 "Tagged files count";"Liczba wytypowanych plików"
+"Autopsy version";"Wersja Autopsy"
 
