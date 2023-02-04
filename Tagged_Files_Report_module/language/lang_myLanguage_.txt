@@ -49,7 +49,7 @@
 "Longitude"			;
 "Altitude"			;
 "Tag"				;
-"Files sorted by [sorted_by] in ascending order."	;
+"Files sorted by *sorted_by* in ascending order."	;
 "To view this report preferred browser is latest Google Chrome, Microsoft Edge or Firefox"	;
 "CAT-0: Uncategorized"	;
 "CAT-1: Child Exploitation (Illegal)"	;
@@ -70,5 +70,5 @@
 "Images (for example): page(s) containing name, link and others metadata of selected files for each evidence category (tag)."	; 
 "Storage and visualization of files"	;
 "Not all of the evidence files exported to this optical media can be opened up in the browser application. In this case, it can be needed the instalation of the proper application"	;
-"All of the evidence files were exported to report folder [report_dir]/[tagged_files]."	;
+"All of the evidence files were exported to report folder *report_dir*/*tagged_files*."	;
 

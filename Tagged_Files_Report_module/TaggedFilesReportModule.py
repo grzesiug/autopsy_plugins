@@ -286,7 +286,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         self.gbPanel0.setConstraints( self.Blank_5, self.gbcPanel0 ) 
         self.panel0.add( self.Blank_5 ) 
 		
-        sortItems = [ 'Date Modified' ,'Date Created','Date Accessed', 'File Path', 'File Name','File Size', 'MD5 Hash', 'MIME Type' ]	
+        sortItems = [ 'Date Modified' ,'Date Created','Date Accessed', 'File Path', 'File Name','File Size', 'MD5 Hash','SHA256 Hash', 'MIME Type' ]	
         self.SortBy_Combobox = JComboBox(sortItems) 
         self.SortBy_Combobox.setEnabled(True)
         self.gbcPanel0.gridx = 3 
@@ -522,8 +522,8 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             
             footerText = footerFile.read()
             
-            footerText = footerText.replace('[current_page]', str(current_page))
-            footerText = footerText.replace('[total_pages]', str(total_pages))
+            footerText = footerText.replace('*current_page*', str(current_page))
+            footerText = footerText.replace('*total_pages*', str(total_pages))
             nextBookmarkFileName = page_file_name + str(current_page + 1) + ".html"
             prevBookmarkFileName = page_file_name + str(current_page - 1) + ".html"
             
@@ -533,16 +533,16 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             if  current_page == total_pages:
                     nextBookmarkFileName = ''
 					
-            footerText = footerText.replace('[bookmark_prev_file]', prevBookmarkFileName)
-            footerText = footerText.replace('[bookmark_next_file]', nextBookmarkFileName)
+            footerText = footerText.replace('*bookmark_prev_file*', prevBookmarkFileName)
+            footerText = footerText.replace('*bookmark_next_file*', nextBookmarkFileName)
             #labels        
-            footerText = footerText.replace('[lb_print]', self.lang.translate("Print") )
-            footerText = footerText.replace('[lb_previous_page]', self.lang.translate("Previous page") )
-            footerText = footerText.replace('[lb_next_page]', self.lang.translate("next page") )
+            footerText = footerText.replace('*lb_print*', self.lang.translate("Print") )
+            footerText = footerText.replace('*lb_previous_page*', self.lang.translate("Previous page") )
+            footerText = footerText.replace('*lb_next_page*', self.lang.translate("next page") )
                 
 			#dodaanie przycisków stron	
             buttons = self.create_page_buttons(page_file_name, current_page,total_pages)           				
-            footerText = footerText.replace('[buttons]', buttons)				
+            footerText = footerText.replace('*buttons*', buttons)				
 
             page_file.write(footerText)
         except BaseException as e:		
@@ -584,7 +584,12 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             if 	tag_content.getMd5Hash()==None:		                
                 MD5 =   self.lang.translate("not calculated")
             else:
-                MD5 =   str(tag_content.getMd5Hash())			
+                MD5 =   str(tag_content.getMd5Hash())	
+
+            if 	tag_content.getSha256Hash()==None:		                
+                SHA256 =   self.lang.translate("not calculated")
+            else:
+                SHA256 =   str(tag_content.getSha256Hash())				
 
             if (tag_content.exists() and "$CarvedFiles/" not in originalFilePath):
                 Deleted = self.lang.translate("No")
@@ -651,12 +656,12 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
                                     if display_name=="Date Created":
                                         utc_time = time.gmtime(int(value))									
                                         value=time.strftime("%Y-%m-%d %H:%M:%S+ 00:00 (UTC)", utc_time)									
-                                    exif_dataText=exif_dataText.replace('['+display_name+']',value)                           		
-                                    gps_dataText=gps_dataText.replace('['+display_name+']',value) 	
+                                    exif_dataText=exif_dataText.replace('*'+display_name+'*',value)                           		
+                                    gps_dataText=gps_dataText.replace('*'+display_name+'*',value) 	
                                 exif =exif_dataText			
 
             #jeśli jest szerokość geo to dodaje wiersz z danymi gps
-            if '[Latitude]' not in gps_dataText:
+            if '*Latitude*' not in gps_dataText:
                 exif+=gps_dataText			
 			
 			#Jeśli plik inny niż video,image,audio, text to wybieramy kod html z pliku bookmark_no_media.html
@@ -686,49 +691,50 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             bookmarkFile = open(bookmarkPath, 'r')               
             bookmarkText = bookmarkFile.read()
 			
-            bookmarkText = bookmarkText.replace('[exif]',exif)  			
-            bookmarkText = bookmarkText.replace('[previewTime]',previewTime)
-            bookmarkText = bookmarkText.replace('[style]',style)
-            bookmarkText = bookmarkText.replace('[fileType]',fileType)
-            bookmarkText = bookmarkText.replace('[style]',style)
-            bookmarkText = bookmarkText.replace('[tagType]',tagType)
-            bookmarkText = bookmarkText.replace('[extractPath]',Exported) 
-            bookmarkText = bookmarkText.replace('[src]',src)             
-            bookmarkText = bookmarkText.replace('[Exported]',self.lang.translate("Report")+"\\"+Exported)             
-            bookmarkText = bookmarkText.replace('[originalFilePath]',originalFilePath)    
-            bookmarkText = bookmarkText.replace('[MD5]',MD5)            
-            bookmarkText = bookmarkText.replace('[index]',index)                
-            bookmarkText = bookmarkText.replace('[size]',strSize)    
-            bookmarkText = bookmarkText.replace('[MimeType]',MimeType)
-            bookmarkText = bookmarkText.replace('[Created]',str(Created))
-            bookmarkText = bookmarkText.replace('[filename]',file_name)
-            bookmarkText = bookmarkText.replace('[Modified]',str(Modified))            
-            bookmarkText = bookmarkText.replace('[Accessed]',str(Accessed))
-            bookmarkText = bookmarkText.replace('[Deleted]',str(Deleted))
+            bookmarkText = bookmarkText.replace('*exif*',exif)  			
+            bookmarkText = bookmarkText.replace('*previewTime*',previewTime)
+            bookmarkText = bookmarkText.replace('*style*',style)
+            bookmarkText = bookmarkText.replace('*fileType*',fileType)
+            bookmarkText = bookmarkText.replace('*style*',style)
+            bookmarkText = bookmarkText.replace('*tagType*',tagType)
+            bookmarkText = bookmarkText.replace('*extractPath*',Exported) 
+            bookmarkText = bookmarkText.replace('*src*',src)             
+            bookmarkText = bookmarkText.replace('*Exported*',self.lang.translate("Report")+"\\"+Exported)             
+            bookmarkText = bookmarkText.replace('*originalFilePath*',originalFilePath)    
+            bookmarkText = bookmarkText.replace('*MD5*',MD5)     
+            bookmarkText = bookmarkText.replace('*SHA256*',SHA256) 			
+            bookmarkText = bookmarkText.replace('*index*',index)                
+            bookmarkText = bookmarkText.replace('*size*',strSize)    
+            bookmarkText = bookmarkText.replace('*MimeType*',MimeType)
+            bookmarkText = bookmarkText.replace('*Created*',str(Created))
+            bookmarkText = bookmarkText.replace('*filename*',file_name)
+            bookmarkText = bookmarkText.replace('*Modified*',str(Modified))            
+            bookmarkText = bookmarkText.replace('*Accessed*',str(Accessed))
+            bookmarkText = bookmarkText.replace('*Deleted*',str(Deleted))
 
 			
 			#labels
-            bookmarkText = bookmarkText.replace('[lb_file_size]',self.lang.translate("File size"))
-            bookmarkText = bookmarkText.replace('[lb_mime_type]',self.lang.translate("MIME Type"))
-            bookmarkText = bookmarkText.replace('[lb_deleted]',self.lang.translate("Deleted"))
-            bookmarkText = bookmarkText.replace('[lb_date]',self.lang.translate("Date"))	
-            bookmarkText = bookmarkText.replace('[lb_date_created]',self.lang.translate("Date Created"))	
-            bookmarkText = bookmarkText.replace('[lb_date_modified]',self.lang.translate("Date Modified"))	
-            bookmarkText = bookmarkText.replace('[lb_date_accessed]',self.lang.translate("Date Accessed"	))	
-            bookmarkText = bookmarkText.replace('[lb_exported_as]',self.lang.translate("Exported as:"))	
-            bookmarkText = bookmarkText.replace('[lb_checksumSuma]',self.lang.translate("Checksum"))		
-            bookmarkText = bookmarkText.replace('[lb_exif_metadata]',self.lang.translate("Exif Metadata"))	
-            bookmarkText = bookmarkText.replace('[lb_generation_date]',self.lang.translate("Generation Date"))	
-            bookmarkText = bookmarkText.replace('[lb_device_make]',self.lang.translate("Device Make"))	
-            bookmarkText = bookmarkText.replace('[lb_device_model]',self.lang.translate("Device Model"))	
-            bookmarkText = bookmarkText.replace('[lb_gps_position]',self.lang.translate("GPS Position"))	
-            bookmarkText = bookmarkText.replace('[lb_google_maps]',self.lang.translate("Google Maps"))	
-            bookmarkText = bookmarkText.replace('[lb_latitude]',self.lang.translate("Latitude"))	
-            bookmarkText = bookmarkText.replace('[lb_longitude]',self.lang.translate("Longitude"))	
-            bookmarkText = bookmarkText.replace('[lb_altitude]',self.lang.translate("Altitude"))				
+            bookmarkText = bookmarkText.replace('*lb_file_size*',self.lang.translate("File size"))
+            bookmarkText = bookmarkText.replace('*lb_mime_type*',self.lang.translate("MIME Type"))
+            bookmarkText = bookmarkText.replace('*lb_deleted*',self.lang.translate("Deleted"))
+            bookmarkText = bookmarkText.replace('*lb_date*',self.lang.translate("Date"))	
+            bookmarkText = bookmarkText.replace('*lb_date_created*',self.lang.translate("Date Created"))	
+            bookmarkText = bookmarkText.replace('*lb_date_modified*',self.lang.translate("Date Modified"))	
+            bookmarkText = bookmarkText.replace('*lb_date_accessed*',self.lang.translate("Date Accessed"	))	
+            bookmarkText = bookmarkText.replace('*lb_exported_as*',self.lang.translate("Exported as:"))	
+            bookmarkText = bookmarkText.replace('*lb_checksumSuma*',self.lang.translate("Checksum"))		
+            bookmarkText = bookmarkText.replace('*lb_exif_metadata*',self.lang.translate("Exif Metadata"))	
+            bookmarkText = bookmarkText.replace('*lb_generation_date*',self.lang.translate("Generation Date"))	
+            bookmarkText = bookmarkText.replace('*lb_device_make*',self.lang.translate("Device Make"))	
+            bookmarkText = bookmarkText.replace('*lb_device_model*',self.lang.translate("Device Model"))	
+            bookmarkText = bookmarkText.replace('*lb_gps_position*',self.lang.translate("GPS Position"))	
+            bookmarkText = bookmarkText.replace('*lb_google_maps*',self.lang.translate("Google Maps"))	
+            bookmarkText = bookmarkText.replace('*lb_latitude*',self.lang.translate("Latitude"))	
+            bookmarkText = bookmarkText.replace('*lb_longitude*',self.lang.translate("Longitude"))	
+            bookmarkText = bookmarkText.replace('*lb_altitude*',self.lang.translate("Altitude"))				
    
 			#zastąpienie niewypełnionych pól w nawiacach []
-            bookmarkText = re.sub("\[.*\]","---",bookmarkText)
+            bookmarkText = re.sub("\*.*\*","---",bookmarkText)
             			
             page_file.write(bookmarkText)      
         except BaseException as e:		
@@ -751,24 +757,24 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
                fileIndexEnd=number_of_tags
 			   
             
-            headerText = headerText.replace('[sorted_by]',self.lang.translate("Files sorted by [sorted_by] in ascending order."))
-            headerText = headerText.replace('[sorted_by]',self.lang.translate(sorted_by))			
-            headerText = headerText.replace('[case_info]',self.lang.translate("Case Information"))
+            headerText = headerText.replace('*sorted_by*',self.lang.translate("Files sorted by *sorted_by* in ascending order."))
+            headerText = headerText.replace('*sorted_by*',self.lang.translate(sorted_by))			
+            headerText = headerText.replace('*case_info*',self.lang.translate("Case Information"))
 
-            headerText = headerText.replace('[title]',self.lang.translate("Report of media analysis"))		
+            headerText = headerText.replace('*title*',self.lang.translate("Report of media analysis"))		
 
-            headerText = headerText.replace('[case_number]', self.Report_Number_TF.getText())
+            headerText = headerText.replace('*case_number*', self.Report_Number_TF.getText())
 
             
-            headerText = headerText.replace('[examiner]', self.Examiners_TF.getText())
-            headerText = headerText.replace('[report_date]', datetime.datetime.today().strftime('%Y-%m-%d %H:%M'))	
-            headerText = headerText.replace('[description]',  self.Description_TF.getText())	
-            headerText = headerText.replace('[from]', str(fileIndexStart))
-            headerText = headerText.replace('[to]',  str(fileIndexEnd))
+            headerText = headerText.replace('*examiner*', self.Examiners_TF.getText())
+            headerText = headerText.replace('*report_date*', datetime.datetime.today().strftime('%Y-%m-%d %H:%M'))	
+            headerText = headerText.replace('*description*',  self.Description_TF.getText())	
+            headerText = headerText.replace('*from*', str(fileIndexStart))
+            headerText = headerText.replace('*to*',  str(fileIndexEnd))
 			
             
-            headerText = headerText.replace('[current_page]', str(current_page))
-            headerText = headerText.replace('[total_pages]', str(total_pages))
+            headerText = headerText.replace('*current_page*', str(current_page))
+            headerText = headerText.replace('*total_pages*', str(total_pages))
             nextBookmarkFileName = page_file_name + str(current_page + 1) + ".html"
             prevBookmarkFileName = page_file_name + str(current_page - 1) + ".html"
             
@@ -777,32 +783,32 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             if  current_page == total_pages:
                     nextBookmarkFileName = ''
 					
-            headerText = headerText.replace('[bookmark_prev_file]', prevBookmarkFileName)
-            headerText = headerText.replace('[bookmark_next_file]', nextBookmarkFileName)
+            headerText = headerText.replace('*bookmark_prev_file*', prevBookmarkFileName)
+            headerText = headerText.replace('*bookmark_next_file*', nextBookmarkFileName)
                 
                     
-            headerText = headerText.replace('[date]', datetime.datetime.today().strftime('%d/%m/%Y'))
-            headerText = headerText.replace('[encoding]', self.charEncoding)
-            headerText = headerText.replace('[tag_name]',  self.lang.translate(tag_name))
-            headerText = headerText.replace('[file_count]', str(number_of_tags))
+            headerText = headerText.replace('*date*', datetime.datetime.today().strftime('%d/%m/%Y'))
+            headerText = headerText.replace('*encoding*', self.charEncoding)
+            headerText = headerText.replace('*tag_name*',  self.lang.translate(tag_name))
+            headerText = headerText.replace('*file_count*', str(number_of_tags))
  
 			#labels
-            headerText = headerText.replace('[lb_title]', self.lang.translate("Title"))	
-            headerText = headerText.replace('[lb_case_number]',  self.lang.translate("Case Number"))	
-            headerText = headerText.replace('[lb_examiner]', self.lang.translate("Examiner(s)"))	
-            headerText = headerText.replace('[lb_report_date]', self.lang.translate("Report date"))
-            headerText = headerText.replace('[lb_description]', self.lang.translate("Description"))	
-            headerText = headerText.replace('[lb_tag]', self.lang.translate("Tag"))
-            headerText = headerText.replace('[lb_file_count]', self.lang.translate("Number of files"))
-            headerText = headerText.replace('[lb_files]', self.lang.translate("Files"))
-            headerText = headerText.replace('[lb_description]', self.lang.translate("Description"))
-            headerText = headerText.replace('[lb_print]', self.lang.translate("Print") )			
-            headerText = headerText.replace('[lb_previous_page]', self.lang.translate("Previous page") )			
-            headerText = headerText.replace('[lb_next_page]', self.lang.translate("next page") )						
+            headerText = headerText.replace('*lb_title*', self.lang.translate("Title"))	
+            headerText = headerText.replace('*lb_case_number*',  self.lang.translate("Case Number"))	
+            headerText = headerText.replace('*lb_examiner*', self.lang.translate("Examiner(s)"))	
+            headerText = headerText.replace('*lb_report_date*', self.lang.translate("Report date"))
+            headerText = headerText.replace('*lb_description*', self.lang.translate("Description"))	
+            headerText = headerText.replace('*lb_tag*', self.lang.translate("Tag"))
+            headerText = headerText.replace('*lb_file_count*', self.lang.translate("Number of files"))
+            headerText = headerText.replace('*lb_files*', self.lang.translate("Files"))
+            headerText = headerText.replace('*lb_description*', self.lang.translate("Description"))
+            headerText = headerText.replace('*lb_print*', self.lang.translate("Print") )			
+            headerText = headerText.replace('*lb_previous_page*', self.lang.translate("Previous page") )			
+            headerText = headerText.replace('*lb_next_page*', self.lang.translate("next page") )						
             
 			#dodaanie przycisków stron	
             buttons = self.create_page_buttons(page_file_name, current_page,total_pages)           				
-            headerText = headerText.replace('[buttons]', buttons)
+            headerText = headerText.replace('*buttons*', buttons)
 			
             page_file.write(headerText)
 			
@@ -841,25 +847,25 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             infoFile = open(infoPath, 'r')           
             infoText = infoFile.read()
             
-            infoText = infoText.replace('[case_info]', self.lang.translate("Case Information"))
-            infoText = infoText.replace('[title]', self.lang.translate("Report of media analysis"))		
-            infoText = infoText.replace('[case_number]', self.Report_Number_TF.getText())
-            infoText = infoText.replace('[examiner]', self.Examiners_TF.getText())
-            infoText = infoText.replace('[report_date]', datetime.datetime.today().strftime('%Y-%m-%d %H:%M'))	
-            infoText = infoText.replace('[description]',  self.Description_TF.getText())	
-            infoText = infoText.replace('[encoding]',  self.charEncoding)
+            infoText = infoText.replace('*case_info*', self.lang.translate("Case Information"))
+            infoText = infoText.replace('*title*', self.lang.translate("Report of media analysis"))		
+            infoText = infoText.replace('*case_number*', self.Report_Number_TF.getText())
+            infoText = infoText.replace('*examiner*', self.Examiners_TF.getText())
+            infoText = infoText.replace('*report_date*', datetime.datetime.today().strftime('%Y-%m-%d %H:%M'))	
+            infoText = infoText.replace('*description*',  self.Description_TF.getText())	
+            infoText = infoText.replace('*encoding*',  self.charEncoding)
 			
 			#labels
-            infoText = infoText.replace('[lb_title]', self.lang.translate("Title"))	
-            infoText = infoText.replace('[lb_case_number]',  self.lang.translate("Case Number"))	
-            infoText = infoText.replace('[lb_examiner]', self.lang.translate("Examiner(s)"))	
-            infoText = infoText.replace('[lb_report_date]', self.lang.translate("Report date"))
-            infoText = infoText.replace('[lb_description]', self.lang.translate("Description"))
-            infoText = infoText.replace('[lb_attention]', self.lang.translate("ATTENTION"))	
-            infoText = infoText.replace('[attention_info]', self.lang.translate("To view this report preferred browser is latest Google Chrome, Microsoft Edge or Firefox"))
+            infoText = infoText.replace('*lb_title*', self.lang.translate("Title"))	
+            infoText = infoText.replace('*lb_case_number*',  self.lang.translate("Case Number"))	
+            infoText = infoText.replace('*lb_examiner*', self.lang.translate("Examiner(s)"))	
+            infoText = infoText.replace('*lb_report_date*', self.lang.translate("Report date"))
+            infoText = infoText.replace('*lb_description*', self.lang.translate("Description"))
+            infoText = infoText.replace('*lb_attention*', self.lang.translate("ATTENTION"))	
+            infoText = infoText.replace('*attention_info*', self.lang.translate("To view this report preferred browser is latest Google Chrome, Microsoft Edge or Firefox"))
             
             #dodawanie informacji o żródlach danych
-            infoText = infoText.replace('[lb_image_information]', self.lang.translate("Image information"))
+            infoText = infoText.replace('*lb_image_information*', self.lang.translate("Image information"))
 			
             data_source_rows="<tr><th class=\"tdh\">"+self.lang.translate("Source name")+"</th><th class=\"tdh\">"+self.lang.translate("Tag name")+"</th><th class=\"tdright\" >"+self.lang.translate("Tagged files count")+"</th></tr>"
             for source in self.data_source_selected:
@@ -867,7 +873,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
                 for tag in self.tags_selected:
                     data_source_rows+="<tr> <td></td><td class=\"tdr\">"+self.lang.translate(tag)+"</td><td class=\"tdright\">"+self.count_tags(tag,source.Id)+"</td>"
                                        
-            infoText = infoText.replace('[source_name_row]', data_source_rows)
+            infoText = infoText.replace('*source_name_row*', data_source_rows)
 			
             # Open and write information.html file
             info_file_name = os.path.join(report_dir, "Info.html")
@@ -894,20 +900,20 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             helpFile = open(helpPath, 'r')           
             helpText = helpFile.read()
             
-            helpText = helpText.replace('[encoding]', self.charEncoding)			
-            helpText = helpText.replace('[lb_help_header]', self.lang.translate("Help"))
-            helpText = helpText.replace('[lb_menu_items_header]', self.lang.translate("Menu's items:"))		   
-            helpText = helpText.replace('[lb_summary_header]', self.lang.translate("Summary of analysis"))	
-            helpText = helpText.replace('[summary_info]',  self.lang.translate("Case information: start page with informations about the case, like case number, forensic examiner, etc."))	
-            helpText = helpText.replace('[help_info]', self.lang.translate("Help: this help page."))	
-            helpText = helpText.replace('[lb_selected_evidences]', self.lang.translate("Selected Evidences"))
-            helpText = helpText.replace('[selected_evidences_info]', self.lang.translate("Images (for example): page(s) containing name, link and others metadata of selected files for each evidence category (tag)."))
-            helpText = helpText.replace('[lb_storage]', self.lang.translate("Storage and visualization of files"))	
-            helpText = helpText.replace('[storage1]', self.lang.translate("Not all of the evidence files exported to this optical media can be opened up in the browser application. In this case, it can be needed the instalation of the proper application"))
-            helpText = helpText.replace('[storage2]', self.lang.translate("All of the evidence files were exported to report folder [report_dir]/[tagged_files]."))
-            helpText = helpText.replace('[tagged_files]', self.lang.translate("Tagged_Files"))	
-            helpText = helpText.replace('[report_dir]', self.lang.translate("Report"))				
-            helpText = helpText.replace('[storage3]', self.lang.translate(""))			
+            helpText = helpText.replace('*encoding*', self.charEncoding)			
+            helpText = helpText.replace('*lb_help_header*', self.lang.translate("Help"))
+            helpText = helpText.replace('*lb_menu_items_header*', self.lang.translate("Menu's items:"))		   
+            helpText = helpText.replace('*lb_summary_header*', self.lang.translate("Summary of analysis"))	
+            helpText = helpText.replace('*summary_info*',  self.lang.translate("Case information: start page with informations about the case, like case number, forensic examiner, etc."))	
+            helpText = helpText.replace('*help_info*', self.lang.translate("Help: this help page."))	
+            helpText = helpText.replace('*lb_selected_evidences*', self.lang.translate("Selected Evidences"))
+            helpText = helpText.replace('*selected_evidences_info*', self.lang.translate("Images (for example): page(s) containing name, link and others metadata of selected files for each evidence category (tag)."))
+            helpText = helpText.replace('*lb_storage*', self.lang.translate("Storage and visualization of files"))	
+            helpText = helpText.replace('*storage1*', self.lang.translate("Not all of the evidence files exported to this optical media can be opened up in the browser application. In this case, it can be needed the instalation of the proper application"))
+            helpText = helpText.replace('*storage2*', self.lang.translate("All of the evidence files were exported to report folder *report_dir*/*tagged_files*."))
+            helpText = helpText.replace('*tagged_files*', self.lang.translate("Tagged_Files"))	
+            helpText = helpText.replace('*report_dir*', self.lang.translate("Report"))				
+            helpText = helpText.replace('*storage3*', self.lang.translate(""))			
 			
             	
             # Open and write information.html file
@@ -1100,6 +1106,8 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             return tagContent.getContent().getName()	
         if sort_criterion=='MD5 Hash':
             return (tagContent.getContent().getMd5Hash())	
+        if sort_criterion=='SHA256 Hash':
+            return (tagContent.getContent().getSha256Hash())	
         if sort_criterion=='MIME Type':
             return tagContent.getContent().getMIMEType()
         if sort_criterion=='File Size':
@@ -1119,14 +1127,14 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
     def create_page_buttons(self,page_file_name,current_page,total_pages):
 		#dodaanie przycisków stron	
         buttons=""
-        button='<input type="button" [style]' + 'onclick="location.href='+ "'" + page_file_name + '[page_number].html' + "'" + ';"' + 'value="[page_number]" />\n	'
+        button='<input type="button" *style*' + 'onclick="location.href='+ "'" + page_file_name + '*page_number*.html' + "'" + ';"' + 'value="*page_number*" />\n	'
         if total_pages > 1:
             for x in range(1, total_pages+1):
                 style =""						
                 if (x==	current_page):
                     style='style="background-color:black;color:white;"'				
-                buttons+= button.replace("[page_number]",str(x))
-                buttons = buttons.replace("[style]",style)
+                buttons+= button.replace("*page_number*",str(x))
+                buttons = buttons.replace("*style*",style)
         return buttons				
      
     def standardize_folder_name(self, folder_name):
