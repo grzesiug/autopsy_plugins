@@ -413,13 +413,16 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             os.mkdir(report_files_dir)
         except:
             self.log(Level.INFO, "Could not create report_files directory")
-            
+			
+          
          
         try:
             report_resources_dir = os.path.join(report_dir , "res")
             os.mkdir(report_resources_dir)
         except:
             self.log(Level.INFO, "Could not create report_res directory")
+			
+			
             
         # Copy the Resource directory to the report directory
         try:
@@ -435,11 +438,11 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
          
         # Create The information page
         try:
-           self.create_info_page(report_dir)
+           self.create_info_page(report_resources_dir)
         except:
             self.log(Level.INFO, "Could not write to info_page")
         # Create the Menu page.
-        self.create_menu_file(report_dir)
+        self.create_menu_file(report_resources_dir)
          
         # Get all Content
         tags = self.data_source_tags
@@ -455,7 +458,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             sorted_tag=self.sort_tags(tags_to_process,self.SortBy_Combobox.getSelectedItem())
             try:
                 if len(sorted_tag)>0:        
-                   self.process_thru_tags(report_dir,sorted_tag , tag_number, sel_tag, report_files_dir)
+                   self.process_thru_tags(report_resources_dir,sorted_tag , tag_number, sel_tag, report_files_dir)
             except BaseException as e:	
                 self.log(Level.INFO, str(e) )
             progressBar.increment()	
@@ -464,7 +467,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
 
 			
 		#Create help file	
-        self.create_help_page(report_dir)        
+        self.create_help_page(report_resources_dir)        
         # Increment since we are done with step #1
         progressBar.increment()
 
@@ -482,6 +485,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
 
     def process_thru_tags(self, report_dir, tags_to_process, book_mark_number, tag_name, report_files_dir):
 	
+        report_resources_dir=os.path.join(report_dir )
         self.create_taged_files_folder(report_files_dir,self.standardize_folder_name(self.lang.translate(tag_name)))        	
         page_number = 1
         current_page_number = 1
@@ -489,26 +493,26 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         total_pages = int(len(tags_to_process))//num_of_tags_per_page
         if (int(len(tags_to_process)) % num_of_tags_per_page) <> 0:
             total_pages = total_pages + 1
-        page_file_name = os.path.join(report_dir, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page")  + str(page_number) + ".html")
+        page_file_name = os.path.join(report_resources_dir, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page")  + str(page_number) + ".html")
         page_file = open(page_file_name, 'w')
-        self.create_page_header(page_file, len(tags_to_process), tag_name, total_pages, page_number,self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_dir,num_of_tags_per_page)        
+        self.create_page_header(page_file, len(tags_to_process), tag_name, total_pages, page_number,self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_resources_dir,num_of_tags_per_page)        
         tag_number = 1
         total_tag_number = 1
         for tag in tags_to_process:
             if tag_number > num_of_tags_per_page:
                 tag_number = 1
                 page_number = page_number + 1
-                page_file_name = os.path.join(report_dir, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page") + str(page_number) + ".html")
-                self.create_page_footer(page_file, total_pages, current_page_number, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_dir)
+                page_file_name = os.path.join(report_resources_dir, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page") + str(page_number) + ".html")
+                self.create_page_footer(page_file, total_pages, current_page_number, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_resources_dir)
                 page_file.close()
                 #page_file_name = os.path.join(report_dir, self.lang.translate("Bookmark") + str(tag_number) + self.lang.translate("Page")+"1.html")
                 page_file = open(page_file_name, 'w')
-                self.create_page_header(page_file, len(tags_to_process), tag_name,total_pages, page_number,self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_dir,num_of_tags_per_page),
+                self.create_page_header(page_file, len(tags_to_process), tag_name,total_pages, page_number,self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_resources_dir,num_of_tags_per_page),
                 current_page_number = current_page_number + 1
             self.create_page_data(page_file, tag, total_tag_number,report_dir, report_files_dir,tag_name)
             tag_number = tag_number + 1
             total_tag_number = total_tag_number + 1
-        self.create_page_footer(page_file, total_pages, current_page_number, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_dir)
+        self.create_page_footer(page_file, total_pages, current_page_number, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_resources_dir)
         page_file.close()
     
 
@@ -603,18 +607,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
 			
             htmlVideoMime=['video/mp4','video/webm','video/quicktime','video/ogg','video/x-m4v']
             htmlAudioMime=['audio/mp4','audio/mpeg','audio/vnd.wave','audio/vorbis','audio/x-flac']			
-            extDict={
-            'video/mp4':'.mp4',
-            'video/webm':'.webm',
-            'video/quicktime':'.mov',
-            'video/ogg':'.ogg',
-            'video/x-m4v':'.m4v',
-            'audio/vnd.wave':'.wave',
-            'audio/vorbis':'.ogg',
-            'audio/x-flac':'.flac',
-            'image/vnd.microsoft.icon':'.ico',
-            'image/x-portable-floatmap':'.pbm'			
-            }
+
 			#zmienna przechowuje typ elementu HTML podstawianego do pliku bookmatk.html
             tagType='img'
             style = 'style="max-width: 100%; max-height: 62vh; min-height: 30vh; "'
@@ -628,7 +621,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
                     tagType='video controls'
                     previewTime = '#t=0.5'
                 else:
-                    src ="res\\video.jpg"
+                    src ="video.jpg"
             else:		
                 if ("text/" in MimeType):
                     tagType='iframe' 
@@ -645,7 +638,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
                            fileType='type="'+MimeType+'"'			
                            style='style="width: 100%; height: 20vh; padding: 20px;"'  					
                         else:
-                            src ="res\\audio.jpg"
+                            src ="audio.jpg"
                     else:
                         if ("image/" in MimeType):					
                             result = self.find_result(obj_id,16,'TSK_DEVICE_MAKE')
@@ -672,12 +665,10 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
 				# dla plików video, audio, text , image sprawdzamy rozszerzenie,
 				# jeśli nie ma to dodajemy do nazwy esportowanego pliku
             else:				
-                if self.get_extension(file_name)==None:
-                    mime_ext=MimeType.split('/')[1]				
-                    if 	(len(mime_ext) < 5 ):
-                        new_extension="." + mime_ext
-                    else:						
-                        new_extension=extDict[MimeType]
+                new_extension="."+ self.get_valid_file_ext(file_name, MimeType)
+				#remove "." if there is no need to chenge extention 
+                if (len(new_extension)==1): 
+				    new_extension=""
 
 						   
             exported_file_mame= self.standardize_folder_name(str(obj_id) + "-" + tag_content.getName()+new_extension)
@@ -686,7 +677,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             ContentUtils.writeToFile(tag_content, File(extractPath))            
             Exported = os.path.join(self.lang.translate("Tagged_Files") ,tag_folder_name, exported_file_mame)
             if src=="":
-               src = Exported
+               src = "..\\"+Exported
 			
             bookmarkPath = os.path.join(self.module_dir,"html", bookmark_file).encode(self.charEncoding)                 			                     
             bookmarkFile = open(bookmarkPath, 'r')               
@@ -698,7 +689,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             bookmarkText = bookmarkText.replace('*fileType*',fileType)
             bookmarkText = bookmarkText.replace('*style*',style)
             bookmarkText = bookmarkText.replace('*tagType*',tagType)
-            bookmarkText = bookmarkText.replace('*extractPath*',Exported) 
+            bookmarkText = bookmarkText.replace('*extractPath*',"..\\"+Exported) 
             bookmarkText = bookmarkText.replace('*src*',src)             
             bookmarkText = bookmarkText.replace('*Exported*',self.lang.translate("Report")+"\\"+Exported)             
             bookmarkText = bookmarkText.replace('*originalFilePath*',originalFilePath)    
@@ -734,7 +725,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             bookmarkText = bookmarkText.replace('*lb_longitude*',self.lang.translate("Longitude"))	
             bookmarkText = bookmarkText.replace('*lb_altitude*',self.lang.translate("Altitude"))				
    
-			#zastąpienie niewypełnionych pól w nawiacach []
+			#replacing text between ** sighns
             bookmarkText = re.sub("\*.*\*","---",bookmarkText)
             			
             page_file.write(bookmarkText)      
@@ -830,8 +821,8 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         index_file.write("</head>")
         index_file.write(" ")
         index_file.write('<frameset cols="290,10%">')
-        index_file.write('    <frame src="'+self.lang.translate("Report")+'/Menu.html" name="navigate" frameborder="0"/>')
-        index_file.write('    <frame src="'+self.lang.translate("Report")+'/Info.html" name="contents" frameborder="1"/>')
+        index_file.write('    <frame src="'+self.lang.translate("Report")+'/res/Menu.html" name="navigate" frameborder="0"/>')
+        index_file.write('    <frame src="'+self.lang.translate("Report")+'/res/Info.html" name="contents" frameborder="1"/>')
         index_file.write("    <noframes/>")
         index_file.write("</frameset>")
         index_file.write(" ")
@@ -949,15 +940,15 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         menu_file.write(' ')
         menu_file.write('<head>')
         menu_file.write('    <meta http-equiv="Content-Type" content="text/html; charset='+ self.charEncoding+'"/>')
-        menu_file.write('    <link rel="stylesheet" type="text/css" href="res/navigation.css"/>')
-        menu_file.write('    <link rel="stylesheet" type="text/css" href="res/common.css"/>')
+        menu_file.write('    <link rel="stylesheet" type="text/css" href="navigation.css"/>')
+        menu_file.write('    <link rel="stylesheet" type="text/css" href="common.css"/>')
         menu_file.write('    <title>' + self.lang.translate("Summary") + '</title>')
         menu_file.write('</head>')
         menu_file.write(' ')
-        menu_file.write('<body background="res/Background.gif">')
+        menu_file.write('<body background="Background.gif">')
         menu_file.write(' ')
-        menu_file.write('<!--    <img style="margin: 0px 70px" border="0" src="res/brasao.gif"/>-->')
-        menu_file.write('    <img style="margin: 0px 10px" border="0" src="res/icon.ico"/>')
+        menu_file.write('<!--    <img style="margin: 0px 70px" border="0" src="brasao.gif"/>-->')
+        menu_file.write('    <img style="margin: 0px 10px" border="0" src="icon.ico"/>')
         menu_file.write('    <p> </p>')
         menu_file.write('    <div>')
         menu_file.write('        <h3><font color="white">' + self.lang.translate("Summary of analysis") + '<h3>')
@@ -1152,7 +1143,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
     def get_extension(self,filename):
         basename = os.path.basename(filename)  # os independent
         ext = '.'.join(basename.split('.')[1:])
-        return '.' + ext if ext else None
+        return ext if ext else None
 
     def find_result(self,obj_id,artifact_type_id,blackboard_attribute_type_name):
         result_array = []
@@ -1199,7 +1190,31 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         self.Label_3.setText(self.lang.translate("Examiner(s) To Appear on Case Info"))
         self.Label_4.setText(self.lang.translate("Description To Appear on Case Info"))
         self.Label_5.setText(self.lang.translate( "Tags to Select for Report:")) 
-        self.Blank_5.setText(self.lang.translate( "Sort files by:")) 		
+        self.Blank_5.setText(self.lang.translate( "Sort files by:"))
+
+# if file extention is invalid returns valid file extention, if file extention is valid returns empty string
+    def get_valid_file_ext(self, file_name, MimeType):
+        ext=self.get_extension(file_name)
+        mime_ext=MimeType.split('/')[1]	
+        extDict={
+            'video/quicktime':'mov',
+            'video/x-m4v':'m4v',
+            'audio/vnd.wave':'wave',
+            'audio/vorbis':'ogg',
+            'audio/x-flac':'flac',
+            'image/vnd.microsoft.icon':'ico',
+            'image/x-portable-floatmap':'pbm',
+            'image/jpeg':'jpg'			
+            }
+        if (ext==mime_ext):
+            return ""
+        if (MimeType in extDict):
+            if (ext==extDict[MimeType]):
+                return ""
+            else:
+                return extDict[MimeType]
+        else:
+            return mime_ext
 
 class Data_Source():
     
