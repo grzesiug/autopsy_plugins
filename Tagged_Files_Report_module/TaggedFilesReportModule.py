@@ -75,7 +75,7 @@ from javax.swing import JComboBox
 from javax.swing.filechooser import FileNameExtensionFilter
 import time
 import re
-#from Language import Language
+
 
 
 
@@ -139,18 +139,6 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         self.gbPanel0.setConstraints( self.Num_Of_Objs_Per_Page_TF, self.gbcPanel0 ) 
         self.panel0.add( self.Num_Of_Objs_Per_Page_TF ) 
 
-        #self.Blank_0 = JLabel( " ") 
-        #self.Blank_0.setEnabled(True)
-        #self.gbcPanel0.gridx = 1 
-        #self.gbcPanel0.gridy = 3
-        #self.gbcPanel0.gridwidth = 1 
-        #self.gbcPanel0.gridheight = 1 
-        #self.gbcPanel0.fill = GridBagConstraints.BOTH 
-        #self.gbcPanel0.weightx = 1 
-        #self.gbcPanel0.weighty = 0 
-        #self.gbcPanel0.anchor = GridBagConstraints.NORTH 
-        #self.gbPanel0.setConstraints( self.Blank_0, self.gbcPanel0 ) 
-        #self.panel0.add( self.Blank_0 ) 
 
         self.Label_1 = JLabel("Report language")
         self.gbcPanel0.gridx = 1 
@@ -248,7 +236,6 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
 
         self.Description_TF = JTextField(30) 
         self.Description_TF.setEnabled(True)
-        #self.Description_TF.setText(Case.getCurrentCase().getNumber())
         self.gbcPanel0.gridx = 3 
         self.gbcPanel0.gridy = 11 
         self.gbcPanel0.gridwidth = 1 
@@ -260,18 +247,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         self.gbPanel0.setConstraints( self.Description_TF, self.gbcPanel0 ) 
         self.panel0.add( self.Description_TF ) 
 
-        #self.Blank_4 = JLabel( " ") 
-        #self.Blank_4.setEnabled(True)
-        #self.gbcPanel0.gridx = 1 
-        #self.gbcPanel0.gridy = 19
-        #self.gbcPanel0.gridwidth = 1 
-        #self.gbcPanel0.gridheight = 1 
-        #self.gbcPanel0.fill = GridBagConstraints.BOTH 
-        #self.gbcPanel0.weightx = 1 
-        #self.gbcPanel0.weighty = 0 
-        #self.gbcPanel0.anchor = GridBagConstraints.NORTH 
-        #self.gbPanel0.setConstraints( self.Blank_4, self.gbcPanel0 ) 
-        #self.panel0.add( self.Blank_4 ) 
+
 
 
         self.Blank_5 = JLabel( "Sort files by:") 
@@ -477,7 +453,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         try:		
              Case.getCurrentCase().addReport(fileName, self.moduleName, self.moduleName)
         except:
-            self.log(Level.INFO, "Could not wadd report to case")
+            self.log(Level.INFO, "Could not add report to case")
         progressBar.increment()
 
         # Call this with ERROR if report was not generated
@@ -485,7 +461,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
 
     def process_thru_tags(self, report_dir, tags_to_process, book_mark_number, tag_name, report_files_dir):
 	
-        report_resources_dir=os.path.join(report_dir )
+        
         self.create_taged_files_folder(report_files_dir,self.standardize_folder_name(self.lang.translate(tag_name)))        	
         page_number = 1
         current_page_number = 1
@@ -493,26 +469,26 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         total_pages = int(len(tags_to_process))//num_of_tags_per_page
         if (int(len(tags_to_process)) % num_of_tags_per_page) <> 0:
             total_pages = total_pages + 1
-        page_file_name = os.path.join(report_resources_dir, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page")  + str(page_number) + ".html")
+        page_file_name = os.path.join(report_dir, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page")  + str(page_number) + ".html")
         page_file = open(page_file_name, 'w')
-        self.create_page_header(page_file, len(tags_to_process), tag_name, total_pages, page_number,self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_resources_dir,num_of_tags_per_page)        
+        self.create_page_header(page_file, len(tags_to_process), tag_name, total_pages, page_number,self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_dir,num_of_tags_per_page)        
         tag_number = 1
         total_tag_number = 1
         for tag in tags_to_process:
             if tag_number > num_of_tags_per_page:
                 tag_number = 1
                 page_number = page_number + 1
-                page_file_name = os.path.join(report_resources_dir, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page") + str(page_number) + ".html")
-                self.create_page_footer(page_file, total_pages, current_page_number, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_resources_dir)
+                page_file_name = os.path.join(report_dir, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page") + str(page_number) + ".html")
+                self.create_page_footer(page_file, total_pages, current_page_number, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_dir)
                 page_file.close()
                 #page_file_name = os.path.join(report_dir, self.lang.translate("Bookmark") + str(tag_number) + self.lang.translate("Page")+"1.html")
                 page_file = open(page_file_name, 'w')
-                self.create_page_header(page_file, len(tags_to_process), tag_name,total_pages, page_number,self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_resources_dir,num_of_tags_per_page),
+                self.create_page_header(page_file, len(tags_to_process), tag_name,total_pages, page_number,self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_dir,num_of_tags_per_page),
                 current_page_number = current_page_number + 1
             self.create_page_data(page_file, tag, total_tag_number,report_dir, report_files_dir,tag_name)
             tag_number = tag_number + 1
             total_tag_number = total_tag_number + 1
-        self.create_page_footer(page_file, total_pages, current_page_number, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_resources_dir)
+        self.create_page_footer(page_file, total_pages, current_page_number, self.lang.translate("Bookmark") + str(book_mark_number) + self.lang.translate("Page"),report_dir)
         page_file.close()
     
 
@@ -520,13 +496,9 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
 	
         try:  
             		
-            footerPath = os.path.join(self.module_dir,"html", "footer.html").encode(self.charEncoding)
-            
-            footerFile = open(footerPath, 'r')
-
-            
-            footerText = footerFile.read()
-            
+            footerPath = os.path.join(self.module_dir,"html", "footer.html").encode(self.charEncoding)           
+            footerFile = open(footerPath, 'r')            
+            footerText = footerFile.read()           
             footerText = footerText.replace('*current_page*', str(current_page))
             footerText = footerText.replace('*total_pages*', str(total_pages))
             nextBookmarkFileName = page_file_name + str(current_page + 1) + ".html"
@@ -1019,40 +991,6 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         dbquery.close()    
         return tag_count         
         
-    #sortuje wytypowane pliki wg kryterium
-    def sort_tags1(self, tags_to_sort,sort_criterion):
-	
-        
-        sorted_tags=[]
-
-        tag_count=len(tags_to_sort)
-        self.log(Level.INFO, "Sorting started: tags to be processed "+str(tag_count) )		
-        if tag_count==0:
-           return sorted_tags
-        i=0
-        r=0
-
-        min_item = self.get_item_to_sort(tags_to_sort[0],sort_criterion)
-                
-        while (len(tags_to_sort)>0):
-                                                   
-                item =self.get_item_to_sort(tags_to_sort[i],sort_criterion)
-                if min_item >=item :                  
-                  min_item=item 
-                  r=i              
-                if i==len(tags_to_sort)-1:                
-                    sorted_tags.append(tags_to_sort[r])
-                    tags_to_sort.pop(r)                
-                    i=0
-                    r=0
-                    if 	(len(sorted_tags)%100==0):				
-				    self.log(Level.INFO, "Sorted: "+str(len(sorted_tags)) )						
-                    if len(tags_to_sort)>0:
-                       min_item = self.get_item_to_sort(tags_to_sort[0],sort_criterion)                     
-                else:
-                    i+=1
-        self.log(Level.INFO, "Sorting finished")
-        return     sorted_tags
 		
     #sortuje wytypowane pliki wg kryterium
     def sort_tags(self, tags_to_sort,sort_criterion):
