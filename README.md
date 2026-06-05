@@ -14,6 +14,19 @@ For each tagged file the report includes:
 - MD5 and SHA-256 checksums
 - EXIF metadata for images: device make, device model, date taken
 - GPS coordinates (latitude, longitude, altitude) with a Google Maps link
+## Screenshots
+
+**Case Information page** — summary of data sources, tags and tagged file counts:
+
+![Case Info](images/case_info.jpg)
+
+**Evidence preview** — file with metadata, EXIF data and inline media preview:
+
+![Evidence Preview](images/ewidence_preview.jpg)
+
+**Report settings panel** — configuration options inside Autopsy:
+
+![Report Settings](images/report_settings.jpg)
 
 ### Media Preview in the Browser
 Files are exported to the report folder and displayed inline in the HTML report:
