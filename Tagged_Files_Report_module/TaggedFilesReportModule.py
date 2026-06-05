@@ -73,20 +73,26 @@ from javax.swing.filechooser import FileNameExtensionFilter
 import time
 import re
 import subprocess
-
+try:
+    import ConfigParser as configparser
+except ImportError:
+    import configparser
 
 class TagHtmlReportModule(GeneralReportModuleAdapter):
     
 
     def __init__(self):
         self.tags_selected = []
-        self.moduleName = "Tagged Files Report" 
+        self.moduleName = "Tagged Files Report v1.1" 
         self._logger = Logger.getLogger(self.moduleName)
         self.charEncoding="UTF-8"
-
+        self.sm = SettingsManager()
+        self.conventer = FileConventer(self.sm.get("Paths","ffmpeg"), self.sm.get("Paths","imagemagick"))
         self.module_dir, tail = os.path.split(os.path.abspath(__file__))
         self.lang = Language()  
         self.report_file_name=self.lang.translate("Report.html")
+
+       
 
     def log(self, level, msg):
         self._logger.logp(level, self.__class__.__name__, inspect.stack()[1][3], msg)
@@ -121,6 +127,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         self.gbPanel0.setConstraints( self.Label_0, self.gbcPanel0 ) 
         self.panel0.add( self.Label_0 ) 
 
+        
         self.Num_Of_Objs_Per_Page_TF = JTextField(5) 
         self.Num_Of_Objs_Per_Page_TF.setEnabled(True)
         self.Num_Of_Objs_Per_Page_TF.setText("10")
@@ -163,7 +170,9 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         self.gbcPanel0.weighty = 0 
         self.gbcPanel0.anchor = GridBagConstraints.NORTH 
         self.gbPanel0.setConstraints( self.Language_Combobox, self.gbcPanel0 ) 
-        self.panel0.add( self.Language_Combobox) 
+        self.panel0.add( self.Language_Combobox)
+
+
 
 
         self.Label_2 = JLabel("Report Number To Appear on Case Info")
@@ -328,7 +337,24 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         self.gbcPanel0.weighty = 1 
         self.gbcPanel0.anchor = GridBagConstraints.NORTH 
         self.gbPanel0.setConstraints( self.scpList_Box_LB, self.gbcPanel0 ) 
-        self.panel0.add( self.scpList_Box_LB ) 
+        self.panel0.add( self.scpList_Box_LB )
+
+        last_lang = self.sm.get("Language", "lastusedlanguage")
+
+        # Jeśli istnieje i jest na liście – ustaw
+        if last_lang and last_lang in self.lang.getLanguages():
+            self.Language_Combobox.setSelectedItem(last_lang)
+        else:
+            self.Language_Combobox.setSelectedIndex(0)
+
+
+        num_of_tags_per_page= self.sm.get("Others", "num_of_tags_per_page")
+
+        # Jeśli istnieje i jest na liście – ustaw
+        if num_of_tags_per_page:
+            self.Num_Of_Objs_Per_Page_TF.setText(num_of_tags_per_page)
+        else:
+            self.Num_Of_Objs_Per_Page_TF.setText("10")   
         
         return self.panel0
         
@@ -362,6 +388,8 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         self.tags_selected=no_empty_tags_selected
         
         self.lang.setLanguageTo(self.Language_Combobox.getSelectedItem())
+        self.sm.set("Language", "lastusedlanguage", self.Language_Combobox.getSelectedItem())
+        self.sm.save()
         self.report_file_name=self.lang.translate("Report.html")
         progressBar.setIndeterminate(False)
         progressBar.start()
@@ -461,7 +489,11 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         self.create_taged_files_folder(report_files_dir,self.standardize_folder_name(self.lang.translate(tag_name)))            
         page_number = 1
         current_page_number = 1
+
         num_of_tags_per_page = int(str(self.Num_Of_Objs_Per_Page_TF.getText()))
+        self.sm.set("Others","num_of_tags_per_page",str(num_of_tags_per_page))
+        self.sm.save()
+
         total_pages = int(len(tags_to_process))//num_of_tags_per_page
         if (int(len(tags_to_process)) % num_of_tags_per_page) != 0:
             total_pages = total_pages + 1
@@ -664,7 +696,6 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             videoToConvert = ['video/quicktime', 'video/x-ms-wmv', 'video/mpeg', 'video/x-matroska', 'video/x-msvideo', 'video/mp4']
             # Plik video do konwersji na mp4
             if (MimeType in videoToConvert):
-                self.conventer = FileConventer()
                 extention = ".mp4"
                 preview_file_name = exported_file_mame + extention
                 outputFile = os.path.join(preview_dir, preview_file_name)
@@ -678,7 +709,6 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             imageToConvert = ['image/heic', 'image/svg+xml', 'image/heif']
             # Pliki graficzne do konwersji na jpg
             if (MimeType in imageToConvert):
-                self.conventer = FileConventer()
                 extention = ".jpg"
                 preview_file_name = exported_file_mame + extention
                 outputFile = os.path.join(preview_dir, preview_file_name)
@@ -1209,6 +1239,8 @@ class Data_Source():
     def __repr__(self):     
         return self.Name
 
+
+
         
 from java.io import File
 import os
@@ -1218,7 +1250,6 @@ from org.sleuthkit.autopsy.coreutils import Logger
 from java.util.logging import Level
 import inspect
 import glob
-
 
 class Language():
    
@@ -1236,6 +1267,8 @@ class Language():
             return self.dict.get(keyword)
         else:
             return keyword
+        
+
 
     def log(self, level, msg):
         self._logger.logp(level, self.__class__.__name__, inspect.stack()[1][3], msg)   
@@ -1280,22 +1313,109 @@ class Language():
 
 class FileConventer():
 
-    def __init__(self):
+    def __init__(self,ffmpegFilePath,ImageMagickPath):
         module_dir,tail = os.path.split(os.path.abspath(__file__))
-        self.ffmpegFilePath=os.path.join(module_dir,'ffmpeg','bin','ffmpeg.exe')
-        self.ImageMagick=os.path.join(module_dir,'ImageMagick','magick.exe')        
-        
+        if ffmpegFilePath and os.path.isfile(ffmpegFilePath):
+            self.ffmpegFilePath=ffmpegFilePath
+        else:
+            self.ffmpegFilePath=os.path.join(module_dir,'ffmpeg','bin','ffmpeg.exe')
+        if ImageMagickPath and os.path.isfile(ImageMagickPath):
+            self.ImageMagickPath=ImageMagickPath
+        else:        
+            self.ImageMagickPath=os.path.join(module_dir,'ImageMagick','magick.exe')		
+		
     def convert_to_mp4(self,inputFile, outputFile):
         try:
             subprocess.call([self.ffmpegFilePath, "-i", inputFile, "-c:v", "h264", "-c:a", "aac", outputFile])
             return True
         except subprocess.CalledProcessError as e:
+            self.log(Level.INFO,str(e))
             return False
 
 
     def convert_to_jpg(self,inputFile, outputFile):
         try:
-            subprocess.call([self.ImageMagick, "convert", inputFile,outputFile])
+            subprocess.call([self.ImageMagickPath, "convert", inputFile,outputFile])
             return True
         except subprocess.CalledProcessError as e:
+            self.log(Level.INFO,str(e))
             return False
+        
+import os
+import ConfigParser
+import re
+from java.io import File
+from org.sleuthkit.autopsy.coreutils import Logger
+from java.util.logging import Level
+import inspect
+import glob
+
+class SettingsManager(object):
+
+    _COMMENTED_VALUE = re.compile(r"^\s*#")
+
+
+    def __init__(self):
+        self. module_dir = os.path.dirname(os.path.abspath(__file__))
+        self._logger = Logger.getLogger("Tagged Files Report")
+        self.ini_path = os.path.join(self.module_dir,"settings.ini")
+        self.log(Level.INFO, 'Settings File: {}'.format(self.ini_path))
+        self._parser = ConfigParser.ConfigParser()
+        self._load()
+
+    def _load(self):
+        if os.path.isfile(self.ini_path):
+            with open(self.ini_path, "r") as fh:
+                self._parser.readfp(fh)
+                self.log(Level.INFO, 'Settings File: {}'.format(fh))
+
+    def reload(self):
+        self._parser = ConfigParser.ConfigParser()
+        self._load()
+
+    def get(self, section, key, fallback=None):
+        try:
+            raw = self._parser.get(section, key).strip()
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+            fallback_str = 'None' if fallback is None else str(fallback)
+            self.log(Level.INFO, 'Settings: {}={}'.format(key, fallback_str))
+            return fallback
+        if not raw or self._COMMENTED_VALUE.match(raw):
+            return fallback
+        return raw
+
+    def is_set(self, section, key):
+        return self.get(section, key) is not None
+
+    def set(self, section, key, value):
+        if not self._parser.has_section(section):
+            self._parser.add_section(section)
+        self._parser.set(section, key, str(value))
+
+    def comment_out(self, section, key):
+        try:
+            current = self._parser.get(section, key).strip()
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+            return
+        if not self._COMMENTED_VALUE.match(current):
+            self._parser.set(section, key, "# " + current)
+
+    def save(self, path=None):
+        target = os.path.abspath(path) if path else self.ini_path
+        dirpath = os.path.dirname(target)
+        if dirpath and not os.path.exists(dirpath):
+            os.makedirs(dirpath)
+        with open(target, "w") as fh:
+            self._parser.write(fh)
+
+    def log(self, level, msg):
+        self._logger.logp(
+            level,
+            self.__class__.__name__,
+            inspect.stack()[1][3],
+            msg
+        )
+
+    def __repr__(self):
+        return "SettingsManager(ini_path={0!r})".format(self.ini_path)
+        
