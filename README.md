@@ -103,4 +103,4 @@ See source file header for full license text.
 
 ## Author
 
-Grzegorz Ginalski — grzegorz.ginalski@o2.pl
+Grzegorz Ginalski
