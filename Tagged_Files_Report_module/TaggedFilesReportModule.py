@@ -32,6 +32,9 @@
 #
 # Version 1.0 - Initial creation - Sept 2019
 #
+# Version 1.2 - Fixed empty case-info page for non-ASCII data source names,
+#               broken CSS path on non-media pages, and count_tags ResultSet handling
+#
 
 import os
 import inspect
@@ -83,7 +86,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
 
     def __init__(self):
         self.tags_selected = []
-        self.moduleName = "Tagged Files Report v1.1" 
+        self.moduleName = "Tagged Files Report v1.2"
         self._logger = Logger.getLogger(self.moduleName)
         self.charEncoding="UTF-8"
         self.sm = SettingsManager()
@@ -904,7 +907,7 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
             
             data_source_rows="<tr><th class=\"tdh\">"+self.lang.translate("Source name")+"</th><th class=\"tdh\">"+self.lang.translate("Tag name")+"</th><th class=\"tdright\" >"+self.lang.translate("Tagged files count")+"</th></tr>"
             for source in self.data_source_selected:
-                data_source_rows+="<tr> <td class=\"tds\">"+str(source.Name)+"</td>  <td class=\"tds\"></td> <td class=\"tds\"> </td> </tr>"
+                data_source_rows+="<tr> <td class=\"tds\">"+source.Name+"</td>  <td class=\"tds\"></td> <td class=\"tds\"> </td> </tr>"
                 for tag in self.tags_selected:
                     data_source_rows+="<tr> <td></td><td class=\"tdr\">"+self.lang.translate(tag)+"</td><td class=\"tdright\">"+self.count_tags(tag,source.Id)+"</td>"
                                        
@@ -1051,10 +1054,13 @@ class TagHtmlReportModule(GeneralReportModuleAdapter):
         #self.log(Level.INFO, sql_statement)
         skCase = Case.getCurrentCase().getSleuthkitCase()
         dbquery = skCase.executeQuery(sql_statement)
-        resultSet = dbquery.getResultSet() 
-        tag_count= resultSet.getString("count")       
-        dbquery.close()    
-        return tag_count         
+        resultSet = dbquery.getResultSet()
+        if resultSet.next():
+            tag_count = resultSet.getString("count")
+        else:
+            tag_count = "0"
+        dbquery.close()
+        return tag_count
         
         
     #sortuje wytypowane pliki wg kryterium
